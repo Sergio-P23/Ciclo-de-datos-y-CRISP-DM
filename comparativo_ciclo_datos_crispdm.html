@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análisis Comparativo: Ciclo del Dato vs CRISP-DM</title>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --card-bg: #1e293b;
+            --accent-data: #38bdf8;
+            --accent-crisp: #f43f5e;
+            --accent-conn: #10b981;
+            --text-light: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        header {
+            text-align: center;
+            padding: 20px 0;
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 2.2rem;
+            color: var(--text-light);
+            margin-bottom: 8px;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            background-color: var(--card-bg);
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn:hover, .tab-btn.active {
+            color: var(--text-light);
+            border-color: var(--accent-data);
+            background-color: #1e293b;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
+        }
+
+        .tab-btn[data-tab="crisp"].active {
+            border-color: var(--accent-crisp);
+            box-shadow: 0 0 15px rgba(244, 63, 94, 0.2);
+        }
+
+        .tab-btn[data-tab="connection"].active {
+            border-color: var(--accent-conn);
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Tabla Comparativa */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+
+        .comparison-table th, .comparison-table td {
+            padding: 16px 20px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .comparison-table th {
+            background-color: #0f172a;
+            font-size: 1.1rem;
+        }
+
+        .comparison-table th.col-data { color: var(--accent-data); }
+        .comparison-table th.col-crisp { color: var(--accent-crisp); }
+
+        .comparison-table tr:hover {
+            background-color: #26334d;
+        }
+
+        /* Card Layout para Fases Estratégicas */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 25px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 25px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+
+        .card.data-theme { border-top: 4px solid var(--accent-data); }
+        .card.crisp-theme { border-top: 4px solid var(--accent-crisp); }
+
+        .card h3 {
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card.data-theme h3 { color: var(--accent-data); }
+        .card.crisp-theme h3 { color: var(--accent-crisp); }
+
+        .q-block {
+            margin-bottom: 15px;
+            background: #131c2e;
+            padding: 12px 15px;
+            border-radius: 6px;
+            border-left: 3px solid var(--border-color);
+        }
+
+        .q-title {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: var(--text-light);
+            margin-bottom: 5px;
+        }
+
+        .q-desc {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Diagrama Interactivo de Conexión */
+        .pipeline-container {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+
+        .flow-diagram {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .flow-node {
+            background-color: #0f172a;
+            border: 2px solid var(--border-color);
+            padding: 20px;
+            border-radius: 10px;
+            flex: 1;
+            min-width: 180px;
+            transition: all 0.3s ease;
+        }
+
+        .flow-node.data-node { border-color: var(--accent-data); }
+        .flow-node.crisp-node { border-color: var(--accent-crisp); }
+        .flow-node.conn-node { border-color: var(--accent-conn); }
+
+        .flow-node h4 {
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+        }
+
+        .flow-arrow {
+            font-size: 1.8rem;
+            color: var(--text-muted);
+        }
+
+        .interactive-panel {
+            background: #131c2e;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            text-align: left;
+            border: 1px solid var(--accent-conn);
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            border-top: 1px solid var(--border-color);
+            padding-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Análisis Comparativo: Ciclo del Dato vs. CRISP-DM</h1>
+        <p>Recurso Digital Interactivo para Arquitectura y Gobernanza de Datos</p>
+    </header>
+
+    <div class="nav-tabs">
+        <button class="tab-btn active" data-tab="matrix" onclick="switchTab('matrix')">Matriz Comparativa</button>
+        <button class="tab-btn" data-tab="data" onclick="switchTab('data')">Fases Estratégicas: Ciclo del Dato</button>
+        <button class="tab-btn" data-tab="crisp" onclick="switchTab('crisp')">Fases Estratégicas: CRISP-DM</button>
+        <button class="tab-btn" data-tab="connection" onclick="switchTab('connection')">Conexión e Integración</button>
+    </div>
+
+    <!-- TAB 1: MATRIZ COMPARATIVA -->
+    <div id="matrix" class="tab-content active">
+        <table class="comparison-table">
+            <thead>
+                <tr>
+                    <th>Dimensión</th>
+                    <th class="col-data">Ciclo del Dato (Operativo)</th>
+                    <th class="col-crisp">CRISP-DM (Analítico)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Enfoque</strong></td>
+                    <td>Gestión del ciclo de vida de la información, disponibilidad, gobernanza y calidad continua.</td>
+                    <td>Resolución de problemas de negocio mediante minería de datos y analítica avanzada/ML.</td>
+                </tr>
+                <tr>
+                    <td><strong>Alcance</strong></td>
+                    <td>Global e insitucional: abarca todos los repositorios y datos de la organización a lo largo del tiempo.</td>
+                    <td>Delimitado a un proyecto específico con objetivos de negocio concretos.</td>
+                </tr>
+                <tr>
+                    <td><strong>Tipo de problema</strong></td>
+                    <td>¿Cómo capturar, almacenar, estructurar, asegurar y purgar datos eficientemente?</td>
+                    <td>¿Cómo descubrir patrones o predecir comportamientos para responder a preguntas de negocio?</td>
+                </tr>
+                <tr>
+                    <td><strong>Resultado Esperado</strong></td>
+                    <td>Plataforma de datos limpia, gobernada, segura y accesible para la organización.</td>
+                    <td>Modelos predictivos, paneles de control o reglas de decisión desplegadas.</td>
+                </tr>
+                <tr>
+                    <td><strong>Rol en Arquitectura</strong></td>
+                    <td>Construye y mantiene las cañerías base (Data Lakes, Warehouses, Pipelines ETL/ELT).</td>
+                    <td>Consume la infraestructura existente para construir feature stores y modelos en producción (MLOps).</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- TAB 2: CICLO DEL DATO -->
+    <div id="data" class="tab-content">
+        <div class="grid-2">
+            <div class="card data-theme">
+                <h3>Etapa 1: Ingesta y Procesamiento (ETL)</h3>
+                
+                <div class="q-block">
+                    <div class="q-title">¿Por qué es crítica para la calidad?</div>
+                    <div class="q-desc">Establece las reglas de validación, tipado y limpieza inicial. Garantiza que solo los datos que cumplen los estándares entren al sistema.</div>
+                </div>
+
+                <div class="q-block">
+                    <div class="q-title">¿Qué riesgos existen si falla?</div>
+                    <div class="q-desc">Corrupción de la base de datos por registros duplicados, nulos o con formatos incompatibles (Garbage In, Garbage Out).</div>
+                </div>
+
+                <div class="q-block">
+                    <div class="q-title">¿Cómo impacta la toma de decisiones?</div>
+                    <div class="q-desc">Decisiones erróneas basadas en datos desactualizados o distorsionados por fallas en la consolidación.</div>
+                </div>
+
+                <div class="q-block">
+                    <div class="q-title">¿Relación con la Arquitectura de Datos?</div>
+                    <div class="q-desc">Define el diseño de orquestadores (Airflow), conectores (Kafka), capas de almacenamiento de Staging y costos de cómputo.</div>
+                </div>
+            </div>
+
+            <div class="card data-theme">
+                <h3>Etapa 2: Gobernanza y Seguridad</h3>
+
+                <div class="q-block">
+                    <div class="q-title">¿Por qué es crítica para la calidad?</div>
+                    <div class="q-desc">Asegura la trazabilidad (data lineage), el catálogo de datos centralizado y los diccionarios conceptuales para toda la empresa.</div>
+                </div>
+
+                <div class="q-block">
+                    <div class="q-title">¿Qué riesgos existen si falla?</div>
+                    <div class="q-desc">Fugas de datos sensibles, infracciones normativas (GDPR/Protección de Datos) y falta de control de accesos.</div>
+                </div>
+
+                <div class="q-block">
+                    <div class="q-title">¿Cómo impacta la toma de decisiones?</div>
+                    <div class="q-desc">Desconfianza ejecutiva en los reportes por falta de certeza sobre el origen y la custodia del dato.</div>
+                </div>
+
+                <div class="q-block">
+                    <div class="q-title">¿Relación con la Arquitectura de Datos?</div>
+                    <div class="q-desc">Determina las políticas de IAM, cifrado en reposo/tránsito, máscaras de privacidad y auditoría de almacenamiento.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 3: CRISP-DM -->
+    <div id="crisp" class="tab-content">
+        <div class="grid-2">
+            <div class="card crisp-theme">
+                <h3>Fase 1: Entendimiento de los Datos</h3>
+
+                <div class="q-block">
+                    <div class="q-title">¿Por qué es crítica para la calidad?</div>
+                    <div class="q-desc">Evalúa si los datos disponibles realmente reflejan el fenómeno de negocio a modelar y si tienen suficiencia estadística.</div>
+                </div>
+
+                <div class="q-block">
+                    <div class="q-title">¿Qué riesgos existen si falla?</div>
+                    <div class="q-desc">Construcción de modelos sobre variables irrelevantes, corruptas o sesgadas metodológicamente.</div>
+                </div>
+
+                <div class="q-block">
+                    <div class="q-title">¿Cómo impacta la toma de decisiones?</div>
+                    <div class="q-desc">Creación de predicciones inexactas que pueden orientar mal la estrategia comercial o financiera.</div>
+                </div>
+
+                <div class="q-block">
+                    <div class="q-title">¿Relación con la Arquitectura de Datos?</div>
+                    <div class="q-desc">Demanda entornos Sandbox o motores de consulta rápida (BigQuery/Snowflake) para exploración masiva sin afectar producción.</div>
+                </div>
+            </div>
+
+            <div class="card crisp-theme">
+                <h3>Fase 2: Despliegue (Deployment)</h3>
+
+                <div class="q-block">
+                    <div class="q-title">¿Por qué es crítica para la calidad?</div>
+                    <div class="q-desc">Garantiza que las predicciones del modelo se entreguen con la latencia, frecuencia y formato requeridos por el sistema operacional.</div>
+                </div>
+
+                <div class="q-block">
+                    <div class="q-title">¿Qué riesgos existen si falla?</div>
+                    <div class="q-desc">El modelo queda "engavetado" en notebooks sin generar impacto, o se degrada rápidamente por cambios en los datos (data drift).</div>
+                </div>
+
+                <div class="q-block">
+                    <div class="q-title">¿Cómo impacta la toma de decisiones?</div>
+                    <div class="q-desc">Las recomendaciones no llegan a los usuarios operativos a tiempo para tomar decisiones en tiempo real.</div>
+                </div>
+
+                <div class="q-block">
+                    <div class="q-title">¿Relación con la Arquitectura de Datos?</div>
+                    <div class="q-desc">Impulsa arquitecturas de MLOps, despliegue de APIs REST, contenedores (Docker/Kubernetes) y bases de datos para inferencia.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 4: CONEXION E INTEGRACION -->
+    <div id="connection" class="tab-content">
+        <div class="pipeline-container">
+            <h2>Simulación de Integración en la Arquitectura</h2>
+            <p style="color: var(--text-muted);">Haz clic en cualquier nodo para ver cómo se conectan los dos modelos en la práctica</p>
+
+            <div class="flow-diagram">
+                <div class="flow-node data-node" onclick="showDetails('node1')">
+                    <h4 style="color: var(--accent-data);">1. Ciclo del Dato</h4>
+                    <p>Ingesta & Gobernanza</p>
+                </div>
+                <div class="flow-arrow">➔</div>
+                <div class="flow-node conn-node" onclick="showDetails('node2')">
+                    <h4 style="color: var(--accent-conn);">2. Repositorio</h4>
+                    <p>Data Lake / Warehouse</p>
+                </div>
+                <div class="flow-arrow">➔</div>
+                <div class="flow-node crisp-node" onclick="showDetails('node3')">
+                    <h4 style="color: var(--accent-crisp);">3. CRISP-DM</h4>
+                    <p>Entendimiento & Modelado</p>
+                </div>
+                <div class="flow-arrow">➔</div>
+                <div class="flow-node crisp-node" onclick="showDetails('node4')">
+                    <h4 style="color: var(--accent-crisp);">4. CRISP-DM</h4>
+                    <p>Despliegue / MLOps</p>
+                </div>
+                <div class="flow-arrow">➔</div>
+                <div class="flow-node data-node" onclick="showDetails('node5')">
+                    <h4 style="color: var(--accent-data);">5. Retroalimentación</h4>
+                    <p>Predicciones al Ciclo</p>
+                </div>
+            </div>
+
+            <div id="node-info" class="interactive-panel">
+                <h3 style="color: var(--accent-conn); margin-bottom: 8px;">Selecciona un paso del diagrama arriba</h3>
+                <p>Descubre el punto exacto de convergencia técnica entre la gestión continua de datos y el proyecto analítico.</p>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        Recurso Digital Interactivo - Comparativa Ciclo del Dato vs. CRISP-DM
+    </footer>
+
+    <script>
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+            document.querySelector(`.tab-btn[data-tab="${tabId}"]`).classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        function showDetails(node) {
+            const infoBox = document.getElementById('node-info');
+            
+            const details = {
+                'node1': {
+                    title: '1. Ingesta y Gobernanza (Ciclo del Dato)',
+                    desc: 'Los datos transaccionales, IoT o de APIs externas ingresan al sistema. Se ejecutan reglas de calidad, limpieza y gobernanza para asegurar que la información sea confiable.'
+                },
+                'node2': {
+                    title: '2. Capa de Almacenamiento Centralizado',
+                    desc: 'El Ciclo del Dato disponibiliza una "Capa Dorada" de datos limpios en un Data Lakehouse o Data Warehouse, sirviendo como la única fuente de verdad para toda la empresa.'
+                },
+                'node3': {
+                    title: '3. Exploración y Modelado (CRISP-DM)',
+                    desc: 'El equipo de Ciencia de Datos toma los datos limpios del Data Warehouse para ejecutar las fases de CRISP-DM: Entendimiento de Datos, Preparación y Modelado Predictivo.'
+                },
+                'node4': {
+                    title: '4. Despliegue de Inferencia (CRISP-DM)',
+                    desc: 'El modelo validado se despliega mediante pipelines de MLOps en contenedores web o microservicios que procesan datos en tiempo real o por lotes.'
+                },
+                'node5': {
+                    title: '5. Reinyección al Ciclo del Dato',
+                    desc: 'Las puntuaciones y predicciones generadas por el modelo desplegado se guardan nuevamente en el Data Lake/Warehouse como nuevos datos, cerrando el ciclo e iniciando nuevamente su gestión operacional.'
+                }
+            };
+
+            if (details[node]) {
+                infoBox.innerHTML = `
+                    <h3 style="color: #10b981; margin-bottom: 8px;">${details[node].title}</h3>
+                    <p style="color: #f8fafc;">${details[node].desc}</p>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
